@@ -3,6 +3,7 @@ import { Check, Info } from 'lucide-react';
 import { useManeuvers } from '@/features/maneuvers/hooks/useManeuvers';
 import { useVisualizationStore } from '@/store/visualization.store';
 import { AddManeuverModal } from './AddManeuverModal';
+import jsPDF from 'jspdf';
 
 const CARD_COLORS = [
   {
@@ -56,7 +57,128 @@ export const ManeuverComparison = () => {
   const { maneuvers, selectedIds, toggleManeuver: hookToggleManeuver, addManeuver, selectedManeuvers } = useManeuvers();
   const { toggleSelectedSatelliteId } = useVisualizationStore();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const generateDetailedReport = () => {
+    const doc = new jsPDF();
 
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    let y = 20;
+
+    // Report title
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(20);
+    doc.setTextColor(30, 40, 80);
+
+    doc.text('SENTINEL - Maneuver Analysis Report', 20, y);
+
+    y += 10;
+
+    // Date and time
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+
+    doc.text(
+      `Generated: ${new Date().toLocaleString()}`,
+      20,
+      y
+    );
+
+    y += 12;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.line(20, y, pageWidth - 20, y);
+
+    y += 12;
+
+    // Section heading
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(30, 30, 30);
+
+    doc.text('Maneuver Comparison', 20, y);
+
+    y += 10;
+
+    // Add the same maneuver information displayed in the tab
+    selectedManeuvers.forEach((maneuver, index) => {
+      if (y > pageHeight - 70) {
+        doc.addPage();
+        y = 20;
+      }
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(12);
+      doc.setTextColor(49, 85, 231);
+
+      doc.text(
+        `${index + 1}. ${maneuver.name}`,
+        20,
+        y
+      );
+
+      y += 9;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.setTextColor(40, 40, 40);
+
+      doc.text(`Type: ${maneuver.type}`, 25, y);
+      y += 7;
+
+      doc.text(`Satellite ID: ${maneuver.satelliteId}`, 25, y);
+      y += 7;
+
+      doc.text(`Delta-V Required: ${maneuver.deltaV} km/s`, 25, y);
+      y += 7;
+
+      doc.text(`Fuel Cost: ${maneuver.fuelCost} kg`, 25, y);
+      y += 7;
+
+      doc.text(`Duration: ${maneuver.duration} days`, 25, y);
+      y += 7;
+
+      doc.text(`Risk Level: ${maneuver.riskLevel}`, 25, y);
+
+      y += 12;
+
+      doc.setDrawColor(220, 220, 220);
+      doc.line(25, y, pageWidth - 25, y);
+
+      y += 12;
+  });
+
+  // Footer
+  const totalPages = doc.getNumberOfPages();
+
+  for (let page = 1; page <= totalPages; page++) {
+    doc.setPage(page);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(120, 120, 120);
+
+    doc.text(
+      'SENTINEL - CelestIQ',
+      20,
+      pageHeight - 10
+    );
+
+    doc.text(
+      `Page ${page} of ${totalPages}`,
+      pageWidth - 45,
+      pageHeight - 10
+    );
+  }
+
+  // Download the PDF
+  doc.save(
+    `SENTINEL_Maneuver_Report_${new Date()
+      .toISOString()
+      .slice(0, 10)}.pdf`
+  );
+};
   const toggleManeuver = (id: string) => {
     hookToggleManeuver(id);
     const maneuver = maneuvers.find((m) => m.id === id);
@@ -170,7 +292,10 @@ export const ManeuverComparison = () => {
                 })}
               </div>
 
-              <button className="w-full mt-4 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-xl text-xs font-bold hover:shadow-[0_0_15px_rgba(74,91,220,0.4)] transition-all flex items-center justify-center gap-2 shrink-0 border border-primary/20">
+              <button
+                onClick={generateDetailedReport}
+                className="w-full mt-4 py-2.5 bg-gradient-to-r from-primary to-secondary text-white rounded-xl text-xs font-bold hover:shadow-[0_0_15px_rgba(74,91,220,0.4)] transition-all flex items-center justify-center gap-2 shrink-0 border border-primary/20"
+              >
                 <Info className="w-4 h-4" /> Generate Detailed Report
               </button>
             </>

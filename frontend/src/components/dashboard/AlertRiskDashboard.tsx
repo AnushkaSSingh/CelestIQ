@@ -173,9 +173,6 @@ export const AlertRiskDashboard = () => {
           </div>
         )}
       </div>
-      <button className="w-full mt-3 text-xs text-muted hover:text-foreground py-2 border-t border-border transition-colors">
-        View All Alerts
-      </button>
     </div>
   );
 };

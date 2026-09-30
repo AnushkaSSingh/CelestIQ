@@ -1,5 +1,7 @@
-
+import { useState } from 'react';
 export const LiveMissionFeed = () => {
+  const [showAll, setShowAll] = useState(false);
+  
   const feedItems = [
     { time: '10:24:35', event: 'Orbit Adjustment Completed', target: 'Satellite ORB-12', status: 'Success', color: 'text-success', bg: 'bg-success/10 border-success/30' },
     { time: '10:23:11', event: 'Trajectory Update', target: 'Satellite SAT-07', status: 'Info', color: 'text-primary', bg: 'bg-primary/10 border-primary/30' },
@@ -13,14 +15,17 @@ export const LiveMissionFeed = () => {
           <h2 className="text-lg font-semibold text-foreground">Live Mission Feed</h2>
           <p className="text-xs text-muted">Real-time telemetry and system updates</p>
         </div>
-        <button className="text-xs border border-border bg-surface-light px-3 py-1.5 rounded hover:bg-surface transition-colors text-foreground">
-          View All
+        <button
+          onClick={() => setShowAll(!showAll)}
+          className="text-xs border border-border bg-surface-light px-3 py-1.5 rounded hover:bg-surface transition-colors text-foreground"
+        >
+          {showAll ? 'Show Less' : 'View All'}
         </button>
       </div>
 
       <div className="space-y-2 relative">
         <div className="absolute left-2 top-2 bottom-2 w-px bg-border z-0"></div>
-        {feedItems.map((item, i) => (
+        {(showAll ? feedItems : feedItems.slice(0, 3)).map((item, i) => (
           <div 
             key={i} 
             style={{ animationDelay: `${i * 80}ms` }}
